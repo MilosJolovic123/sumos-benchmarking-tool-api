@@ -1,0 +1,616 @@
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Question, QuestionDocument } from '../schemas/question.schema';
+
+@Injectable()
+export class SeedService implements OnModuleInit {
+  private readonly logger = new Logger(SeedService.name);
+
+  constructor(
+    @InjectModel(Question.name) private questionModel: Model<QuestionDocument>,
+  ) {}
+
+  async onModuleInit() {
+    await this.seedQuestions();
+  }
+
+  private async seedQuestions() {
+    const count = await this.questionModel.countDocuments();
+    
+    if (count === 0) {
+      this.logger.log('Baza je prazna. Započinjem migraciju pitanja iz dokumenta...');
+
+      const initialQuestions = [
+       
+        {
+          key: 'demo_gender',
+          text: 'Gender:',
+          category: 'Demographic data',
+          type: 'SINGLE_CHOICE',
+          options: ['Male', 'Female', 'Other', 'I prefer not to say'],
+          optional: false,
+        },
+        {
+          key: 'demo_age',
+          text: 'Your age:',
+          category: 'Demographic data',
+          type: 'NUMBER',
+          options: [],
+          optional: false,
+        },
+        {
+            key: 'study_status_university',
+            text:"Please select your home university. If not listed, choose 'Other' and specify",
+            category:"Study status data",
+            type:"SINGLE_CHOICE",
+            options:["Univesity of Zagreb, Faculty of Organization and Informatics Varaždin","ESIEA Graduate School of Engineering","University of Žilina, Faculty of Management Science and Informatics","University of Maribor, Faculty of Organizational Sciences","University of Belgrade, Faculty of Organizational Sciences","Other"],
+            optional:false
+        },
+        {
+          key: 'study_status_study_area',
+          text: 'What is your area of study?',
+          category: 'Study status data',
+          type: 'SINGLE_CHOICE',
+          options: [
+            'Education', 'Arts and humanities', 'Social sciences, journalism and information', 
+            'Business, administration and law', 'Natural sciences, mathematics and statistics', 'Information and Communication Technologies (ICTs)', 
+            'Engineering, manufacturing and construction', 'Agriculture, forestry, fisheries and veterinary', 'Health and welfare', 'Services'
+          ],
+          optional: false,
+        },
+        {
+            key: 'study_status_study_level',
+          text: 'What is your level of study?',
+          category: 'Study status data',
+          type: 'SINGLE_CHOICE',
+          options: ['Bachelor', 'Master', 'Doctoral'],
+          optional: false,
+        },
+        {
+          key: 'study_status_origin_area',
+          text: 'Where do you come from?',
+          category: 'Demographic data',
+          type: 'SINGLE_CHOICE',
+          options: [
+            'A rural area', 
+            'A small town', 
+            'A mid-sized city (ca 40.000-100.000 inhabitants)', 
+            'A large city (> 100.000 inhabitants)'
+          ],
+          optional: false,
+        },
+        {
+          key: 'study_status_study_location',
+          text: 'Where do you study?',
+          category: 'Study status data',
+          type: 'SINGLE_CHOICE',
+          options: [
+            'In the same place/town where my family lives', 
+            'Nearby my hometown (< 30 km distance)', 
+            '30-200 km away from my hometown', 
+            '>200 km away from my hometown'
+          ],
+          optional: false,
+        },
+        {
+            key: 'study_status_study_living_location',
+            text:'Where do you live currently while studying?',
+            category:'Study status data',
+            type:'SINGLE_CHOICE',
+            options:["At home with my family","Student dormitory","Rented apartment by myself","Rented apartment with roomates"]
+        },
+        // Uslov za poslednje 3 kategorije pitanja - mobility
+        {
+          key: 'exchange_status',
+          text: 'Have you participated in a semester exchange during your studies?',
+          category: 'Exchange experience data',
+          type: 'SINGLE_CHOICE',
+          options: [
+            'No', 
+            'Not yet, but I applied for an exchange for the next academic year', 
+            'I’m currently on my semester abroad', 
+            'Yes, once', 
+            'Yes, once, and I applied for another semester abroad for the next academic year', 
+            'Yes, twice or more'
+          ],
+          optional: false,
+        },
+     {
+    key: 'awareness_1',
+    text: 'I keep myself informed about current environmental problems (e.g., climate change, biodiversity loss, pollution).',
+    category: 'AWARENESS',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'awareness_2',
+    text: 'I am familiar with the concept of sustainable development (i.e. UN Sustainable Development Goals (SDGs), ESG).',
+    category: 'AWARENESS',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'awareness_3',
+    text: 'I understand that my everyday life has an impact on the environment (ecological footprint).',
+    category: 'AWARENESS',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'awareness_4',
+    text: 'I know which everyday actions can reduce my ecological footprint.',
+    category: 'AWARENESS',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'awareness_5',
+    text: 'I am familiar with local organizations (student NGOs, environmental initiatives).',
+    category: 'AWARENESS',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'attitude_1',
+    text: 'I feel like I, as an individual, can make a difference in environmental protection.',
+    category: 'ATTITUDES/MOTIVATIONS',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'attitude_2',
+    text: 'I try to adopt more sustainable habits because I want to reduce my environmental impact.',
+    category: 'ATTITUDES/MOTIVATIONS',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'attitude_3',
+    text: 'I feel good about myself when I make sustainable choices in my daily life.',
+    category: 'ATTITUDES/MOTIVATIONS',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'attitude_4',
+    text: 'I am motivated to live more sustainably because I care about the quality of life of future generations.',
+    category: 'ATTITUDES/MOTIVATIONS',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+{
+    key: 'habits_travel_daily',
+    text: 'During a regular week of classes, when traveling to and from my university classes, the means of transport I use are:',
+    category: 'HABITS - Travel',
+    type: 'LIKERT-MATRIX',
+    options: [
+      'Public transport',
+      'E-scooter/e-bike',
+      'Carpooling/car sharing',
+      'Car (alone)',
+      'Bike',
+      'Walk'
+    ],
+    requiresMobility: false,
+  }
+  ,
+  {
+    key: 'habits_travel_distance',
+    text: 'When traveling to campus for your classes and exams, what is the approximate one-way distance from your home to campus?',
+    category: 'HABITS - Travel',
+    type: 'SINGLE_CHOICE',
+    options: ['Less than 2km', '2-5km', '5-10km', '10-20km', 'More than 20km'],
+    optional: false,
+  },
+  {
+    key: 'habits_other_plane',
+    text: 'When traveling to other destinations (for leisure travelling, to visit family, to go back to my hometown), the means of transport I use are:',
+    category: 'HABITS - Travel',
+    type: 'LIKERT-MATRIX',
+    options: ["Plane","Train","Bus","Carpool/car sharing","I often combine multiple modes of transport in one trip (e.g., bus + train + walking)"],
+    optional: false,
+  },
+  {
+    key: 'habits_trips_total',
+    text: 'In the last 12 months, how many round trips did you make to other destinations (family/leisure)?',
+    category: 'HABITS - Travel',
+    type: 'SINGLE_CHOICE',
+    options: ['0', '1-2', '3-5', '6-10', 'More than 10'],
+    optional: false,
+  },
+  {
+    key: 'habits_trips_plane',
+    text: 'In the last 12 months, how many round trips did you take by plane?',
+    category: 'HABITS - Travel',
+    type: 'SINGLE_CHOICE',
+    options: ['0', '1', '2', '3-5', 'More than 5'],
+    optional: false,
+  },
+  {
+    key: 'habits_living_heating',
+    text: 'In your accommodation, heating/cooling costs are:',
+    category: 'HABITS - Living and accommodation',
+    type: 'SINGLE_CHOICE',
+    options: ['Included in rent/dorm', 'Paid separately', 'Not sure'],
+    optional: false,
+  },
+  {
+    key: 'habits_living_laundry',
+    text: 'How many times a week do you wash your laundry?',
+    category: 'HABITS - Living and accommodation',
+    type: 'SINGLE_CHOICE',
+    options: ['0', '1', '2-3', '4-5', 'More than 5'],
+    optional: false,
+  },
+  {
+    key: 'habits_sustainability',
+    text: 'My sustainability habits are:',
+    category: 'HABITS - Living and accommodation',
+    type: 'LIKERT-MATRIX',
+    options: ['Room temperature in winter is kept at max 20-21 °C','Room temperature in summer is kept no less than 26 °C','I take short showers (<10 min)'
+        ,'I turn off the tap while soaping / brushing teeth','I turn off and/or unplug devices and chargers when not in use (I avoid leaving them on standby).',
+        'I recycle / separate waste'
+    ],
+    optional: false,
+  },
+  {
+    key: 'habits_consumption_diet',
+    text: 'My usual diet is:',
+    category: 'HABITS - Buying and consumption',
+    type: 'SINGLE_CHOICE',
+    options: ['Based mostly on meat', 'Based on a mix of meat and vegetables', 'Pescatarian', 'Vegetarian', 'Vegan'],
+    optional: false,
+  },
+  {
+    key: 'habits_consumption_meat_days',
+    text: 'If you eat meat, how many days per week do you eat it?',
+    category: 'HABITS - Buying and consumption',
+    type: 'SINGLE_CHOICE',
+    options: ['Never', '1-2', '3-4', '5-6', '7'],
+    optional: false,
+  },
+  {
+    key: 'habits_consumption_restaurants',
+    text: 'I avoid getting food from restaurants and takeaways to be more sustainable.',
+    category: 'HABITS - Buying and consumption',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_consumption_leftovers',
+    text: 'I plan meals and use leftovers (storing, freezing) instead of throwing food away.',
+    category: 'HABITS - Buying and consumption',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_consumption_markets',
+    text: "I shop at local farmer’s markets.",
+    category: 'HABITS - Buying and consumption',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_consumption_seasonal',
+    text: 'I buy seasonal products.',
+    category: 'HABITS - Buying and consumption',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_consumption_bags',
+    text: 'I use reusable shopping bags / tote bags.',
+    category: 'HABITS - Buying and consumption',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_consumption_bottle',
+    text: 'I use a reusable water bottle / travel mug.',
+    category: 'HABITS - Buying and consumption',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_consumption_secondhand',
+    text: 'I buy clothing / gear in second-hand / rental / repair shops.',
+    category: 'HABITS - Buying and consumption',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_consumption_new_clothes',
+    text: 'In the last 3 months, how many new clothing items have you bought?',
+    category: 'HABITS - Buying and consumption',
+    type: 'SINGLE_CHOICE',
+    options: ['0', '1-2', '3-5', '6-10', 'More than 10'],
+    optional: false,
+  },
+  {
+    key: 'habits_digital_devices',
+    text: 'I try to use my digital devices (e.g., phone, laptop, tablet) for as long as possible before replacing them (service/repair before replacement).',
+    category: 'HABITS - Digital habits',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_digital_energy_saving',
+    text: 'Energy-saving modes are enabled on my digital devices (phone/laptop/tablet…).',
+    category: 'HABITS - Digital habits',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_digital_files',
+    text: 'I regularly delete unused files, apps or emails to reduce digital carbon footprint.',
+    category: 'HABITS - Digital habits',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_digital_tradein',
+    text: 'When replacing my digital devices, I use a trade-in/discount program with recycling of the old device.',
+    category: 'HABITS - Digital habits',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_digital_ewaste',
+    text: 'I dispose of e-waste (chargers, batteries…) at recycling centers/e-waste collection points.',
+    category: 'HABITS - Digital habits',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'habits_community_activities',
+    text: 'I take part in joint activities (community gardens, clean-ups, helping older adults).',
+    category: 'HABITS - Engagement in the community',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'barriers_structural_products',
+    text: 'It is difficult to find sustainable products (e.g. eco-labelled, local, reusable) where I usually shop.',
+    category: 'BARRIERS - Structural barriers',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'barriers_structural_mobility',
+    text: 'Sustainable mobility options (e.g., public transport, cycling routes) are not convenient or accessible for me.',
+    category: 'BARRIERS - Structural barriers',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'barriers_financial_expensive',
+    text: 'I find sustainable products (e.g. eco-labelled, local, reusable) more expensive than regular alternatives.',
+    category: 'BARRIERS - Financial barriers',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'barriers_informational_confusing',
+    text: 'It can be confusing to know which products or behaviors are truly sustainable.',
+    category: 'BARRIERS - Informational barriers',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'barriers_informational_uninformed',
+    text: 'I do not feel sufficiently informed about sustainable alternatives.',
+    category: 'BARRIERS - Informational barriers',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'barriers_personal_convenience',
+    text: 'Unsustainable options (e.g., driving alone, buying new items) are usually more convenient for me.',
+    category: 'BARRIERS - Personal & Psychological barriers',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'barriers_personal_support',
+    text: 'People around me (friends, classmates, family) do not support or practice sustainable behaviors.',
+    category: 'BARRIERS - Personal & Psychological barriers',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'barriers_personal_habits',
+    text: 'My existing habits make it difficult for me to switch to more sustainable choices.',
+    category: 'BARRIERS - Personal & Psychological barriers',
+    type: 'LIKERT',
+    options: [],
+    optional: false,
+  },
+  {
+    key: 'mobility_before_rubric',
+    text: 'BEFORE MOBILITY - BASELINE SUSTAINABILITY PROFILE: Please select one level (1-5) in each row to describe your sustainability profile before mobility.',
+    category: 'BEFORE MOBILITY',
+    type: 'RUBRIC', //Ovo je izmenjeno, dodali smo RUBRIC kao tip pitanja u base model
+    optional: true,
+    options: [
+      {
+        dimension: 'Awareness',
+        levels: {
+          1: 'Not informed about sustainable practices before mobility.',
+          2: 'Very limited awareness before mobility.',
+          3: 'Some awareness, but incomplete.',
+          4: 'Fairly well informed before mobility.',
+          5: 'Very well informed before mobility.'
+        }
+      },
+      {
+        dimension: 'Attitude / Motivation',
+        levels: {
+          1: 'Not motivated to make sustainable choices.',
+          2: 'Low motivation for sustainable choices.',
+          3: 'Some motivation, but not consistent.',
+          4: 'Generally motivated to make sustainable choices.',
+          5: 'Highly motivated to make sustainable choices.'
+        }
+      },
+      {
+        dimension: 'Habits',
+        levels: {
+          1: 'Rarely practiced sustainable habits.',
+          2: 'Only occasionally practiced sustainable habits.',
+          3: 'Practiced some sustainable habits, but inconsistently.',
+          4: 'Regularly practiced sustainable habits.',
+          5: 'Consistently practiced sustainable habits in travel, consumption, and daily living.'
+        }
+      },
+      {
+        dimension: 'Barriers / Coping',
+        levels: {
+          1: 'Barriers almost completely prevented sustainable behavior.',
+          2: 'Barriers often made sustainable behavior very difficult.',
+          3: 'Barriers sometimes limited sustainable behavior.',
+          4: 'Usually able to act sustainably despite barriers.',
+          5: 'Fully able to act sustainably despite barriers in my environment.'
+        }
+      }
+    ]
+  }
+  ,
+  {
+  key: 'mobility_during_rubric',
+  text: 'DURING MOBILITY - SUSTAINABILITY EXPERIENCE: Please select one level (1-5) in each row to describe your sustainability-related experience during mobility.',
+  category: 'DURING MOBILITY',
+  type: 'RUBRIC',
+  optional: true,
+  options: [
+    {
+      dimension: 'Awareness',
+      levels: {
+        1: 'No positive change in awareness during mobility.',
+        2: 'Only slight increase in awareness during mobility.',
+        3: 'Some increase in awareness, but not consistent.',
+        4: 'Clear increase in awareness during mobility.',
+        5: 'Strong and consistent increase in awareness during mobility.'
+      }
+    },
+    {
+      dimension: 'Attitude / Motivation',
+      levels: {
+        1: 'No positive change in motivation during mobility.',
+        2: 'Only slight increase in motivation during mobility.',
+        3: 'Some increase in motivation, but not consistent.',
+        4: 'Clear increase in motivation during mobility.',
+        5: 'Strong and consistent increase in motivation during mobility.'
+      }
+    },
+    {
+      dimension: 'Habits',
+      levels: {
+        1: 'No positive change in sustainable habits during mobility.',
+        2: 'Only occasional adoption of new sustainable habits.',
+        3: 'Some more sustainable habits, but not consistent.',
+        4: 'Clear increase in sustainable habits during mobility.',
+        5: 'Strong and consistent practice of sustainable habits during mobility.'
+      }
+    },
+    {
+      dimension: 'Barriers / Coping',
+      levels: {
+        1: 'Barriers prevented sustainable behavior during mobility.',
+        2: 'Rarely able to maintain sustainable behavior during mobility.',
+        3: 'Able to maintain sustainable behavior in some situations.',
+        4: 'Usually able to maintain sustainable behavior despite barriers.',
+        5: 'Fully able to maintain sustainable behavior despite barriers during mobility.'
+      }
+    }
+  ]
+},
+{
+  key: 'mobility_after_rubric',
+  text: 'AFTER MOBILITY - SUSTAINABILITY RETENTION: Please select one level (1-5) in each row to describe your sustainability profile after returning home.',
+  category: 'AFTER MOBILITY',
+  type: 'RUBRIC',
+  optional: true,
+  options: [
+    {
+      dimension: 'Awareness',
+      levels: {
+        1: 'No retained increase in awareness after mobility.',
+        2: 'Only slight retained increase in awareness after mobility.',
+        3: 'Some retained increase in awareness, but limited.',
+        4: 'Clear retained awareness after mobility.',
+        5: 'Strong and consistent retained awareness after mobility.'
+      }
+    },
+    {
+      dimension: 'Attitude / Motivation',
+      levels: {
+        1: 'No retained increase in motivation after mobility.',
+        2: 'Only slight retained increase in motivation after mobility.',
+        3: 'Some retained motivation, but not consistent.',
+        4: 'Clear retained motivation after mobility.',
+        5: 'Strong and consistent retained motivation after mobility.'
+      }
+    },
+    {
+      dimension: 'Habits',
+      levels: {
+        1: 'Do not continue sustainable habits after mobility.',
+        2: 'Continue only a few sustainable habits occasionally.',
+        3: 'Maintain some sustainable habits, but inconsistently.',
+        4: 'Continue sustainable habits in everyday life after mobility.',
+        5: 'Strongly and consistently maintain sustainable habits after mobility.'
+      }
+    },
+    {
+      dimension: 'Barriers / Coping',
+      levels: {
+        1: 'Barriers prevent sustainable behavior after mobility.',
+        2: 'Rarely able to maintain sustainable behavior at home.',
+        3: 'Maintain sustainable behavior only in some situations.',
+        4: 'Usually able to maintain sustainable behavior despite barriers.',
+        5: 'Fully able to maintain sustainable behavior despite barriers in my home environment.'
+      }
+    }
+  ]
+}
+ 
+      ];
+
+      // Upis u bazu
+      await this.questionModel.insertMany(initialQuestions);
+      this.logger.log(`Uspešno je ubačeno ${initialQuestions.length} pitanja u bazu!`);
+    } else {
+      this.logger.log(`Pitanja su već u bazi (ukupno: ${count}). Preskačem migraciju.`);
+    }
+  }
+}
