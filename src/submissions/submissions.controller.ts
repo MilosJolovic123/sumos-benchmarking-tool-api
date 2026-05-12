@@ -1,7 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { SubmissionsService } from './submission.service';
 
-
 @Controller('api/submissions')
 export class SubmissionsController {
   constructor(private readonly submissionsService: SubmissionsService) {}

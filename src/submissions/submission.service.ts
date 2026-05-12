@@ -5,13 +5,15 @@ import { Submission, SubmissionDocument } from '../schemas/submission.schema';
 import { Question, QuestionDocument } from '../schemas/question.schema';
 import { scoringConfig } from './scoring.config';
 import { EmailService } from '../email/email.service';
-
+//ovde treba ostaviti i dokument kojim ce se upisivati direktno rezultati jednog ispitanika - moraju imati kod a pozeljno i mejl
+//da bi se lakse cupali kasnije za benchmark i tips and tricks
 @Injectable()
 export class SubmissionsService {
   private readonly logger = new Logger(SubmissionsService.name);
 
   constructor(
-    @InjectModel(Submission.name) private submissionModel: Model<SubmissionDocument>,
+    @InjectModel(Submission.name)
+    private submissionModel: Model<SubmissionDocument>,
     @InjectModel(Question.name) private questionModel: Model<QuestionDocument>,
     private emailService: EmailService,
   ) {}
@@ -22,36 +24,42 @@ export class SubmissionsService {
     // 1. Dobavljamo sva pitanja iz baze kako bismo mapirali 'key' u 'text' i 'category'
     const allQuestions = await this.questionModel.find().exec();
     const questionMap = new Map();
-    allQuestions.forEach(q => {
+    allQuestions.forEach((q) => {
       questionMap.set(q.key, { text: q.text, category: q.category });
     });
 
     // 2. Mapiranje institucije i države
-    const institution = odgovori['study_status_university'] || 'Unknown';
+    // Ovo treba remapirati sa pitanjem iz koje drzave dolazite
+    const institution = 'Unknown';
+    //const institution = odgovori['study_status_university'] || 'Unknown';
     const state = this.determineState(institution);
 
     // 3. Mapiranje statusa mobilnosti
     const exchangeStatus = odgovori['exchange_status'] || '';
-    const mobilityDone = exchangeStatus.includes('Yes') || exchangeStatus.includes('currently');
+    const mobilityDone =
+      exchangeStatus.includes('Yes') || exchangeStatus.includes('currently');
 
-    // 4. Transformacija ravnog 'odgovori' objekta u tvoj novi Answer[] niz
+    // 4. Transformacija ravnog 'odgovori' objekta Answer[] niz
     const structuredAnswers: {
-    questionKey: string;
-    questionText: string;
-    category: string;
-    questionVersion: number;
-    value: any;
+      questionKey: string;
+      questionText: string;
+      category: string;
+      questionVersion: number;
+      value: any;
     }[] = [];
 
     for (const [key, value] of Object.entries(odgovori)) {
-      const qInfo = questionMap.get(key) || { text: 'Unknown/Custom Question', category: 'Uncategorized' };
-      
+      const qInfo = questionMap.get(key) || {
+        text: 'Unknown/Custom Question',
+        category: 'Uncategorized',
+      };
+
       structuredAnswers.push({
         questionKey: key,
         questionText: qInfo.text,
         category: qInfo.category,
         questionVersion: 1,
-        value: value
+        value: value,
       });
     }
 
@@ -63,24 +71,29 @@ export class SubmissionsService {
       state: state,
       institution: institution,
       questionnaireVersion: 1,
-      email: email || 'anonymous@test.com',
+      email: email || 'test-email@test.com',
       mobilityDone: mobilityDone,
-      answers: structuredAnswers
+      answers: structuredAnswers,
     });
-    
+
     await newSubmission.save();
     this.logger.log(`Prijava perzistirana u MongoDB. ID: ${newSubmission._id}`);
 
     // 7. Slanje mejla
     if (email) {
-      this.emailService.sendResultsEmail(email, scores.overallScore, scores.categoryScores);
+      this.emailService.sendResultsEmail(
+        email,
+        scores.overallScore,
+        scores.categoryScores,
+      );
     }
 
     // 8. Vraćanje rezultata
     return {
-      message: 'Prijava je uspešna, rezultati su sačuvani po novoj strukturi i poslati na mejl.',
+      message:
+        'Prijava je uspešna, rezultati su sačuvani po novoj strukturi i poslati na mejl.',
       submissionId: newSubmission._id,
-      results: scores
+      results: scores,
     };
   }
 
@@ -109,14 +122,18 @@ export class SubmissionsService {
           this.addToCategory(categoryTotals, config.category, score);
         }
       } else if (typeof answer === 'number') {
-        const score = config.reverse ? (6 - answer) : answer;
+        const score = config.reverse ? 6 - answer : answer;
         this.addToCategory(categoryTotals, config.category, score);
-      } else if (typeof answer === 'object' && answer !== null && (config.isMatrix || config.isRubric)) {
+      } else if (
+        typeof answer === 'object' &&
+        answer !== null &&
+        (config.isMatrix || config.isRubric)
+      ) {
         for (const subKey in answer) {
           const subAnswer = answer[subKey];
           if (typeof subAnswer === 'number') {
             const isReverse = config.reverseKeys?.includes(subKey);
-            const subScore = isReverse ? (6 - subAnswer) : subAnswer;
+            const subScore = isReverse ? 6 - subAnswer : subAnswer;
             const targetCategory = config.isRubric ? subKey : config.category;
             this.addToCategory(categoryTotals, targetCategory, subScore);
           }
@@ -136,8 +153,8 @@ export class SubmissionsService {
     }
 
     return {
-      overallScore: totalCount > 0 ? (totalSum / totalCount) : 0,
-      categoryScores
+      overallScore: totalCount > 0 ? totalSum / totalCount : 0,
+      categoryScores,
     };
   }
 
