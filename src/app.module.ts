@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SubmissionsModule } from './submissions/submissions.module';
 import { EmailModule } from './email/email.module';
 import { Question, QuestionSchema } from './schemas/question.schema';
+import { CountriesModule } from './countries/countries.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -22,7 +23,8 @@ MongooseModule.forRootAsync({
     QuestionsModule,
     MongooseModule.forFeature([{ name: Submission.name, schema: SubmissionSchema }]),
     SubmissionsModule,
-    EmailModule
+    EmailModule,
+    CountriesModule
   ],
   controllers: [],
   providers: [SeedService],

@@ -54,7 +54,7 @@ export class SeedService implements OnModuleInit {
           category: 'Study status data',
           type: 'SINGLE_CHOICE',
           options: [
-            'Univesity of Zagreb, Faculty of Organization and Informatics Varaždin',
+            'University of Zagreb, Faculty of Organization and Informatics Varaždin',
             'ESIEA Graduate School of Engineering',
             'University of Žilina, Faculty of Management Science and Informatics',
             'University of Maribor, Faculty of Organizational Sciences',

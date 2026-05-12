@@ -3,10 +3,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { QuestionsController } from './questions.controller';
 import { QuestionsService } from './questions.service';
 import { Question, QuestionSchema } from '../schemas/question.schema';
+import { CountriesModule } from 'src/countries/countries.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Question.name, schema: QuestionSchema }]),
+    CountriesModule
   ],
   controllers: [QuestionsController],
   providers: [QuestionsService],
