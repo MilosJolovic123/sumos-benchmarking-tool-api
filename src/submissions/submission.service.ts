@@ -5,8 +5,7 @@ import { Submission, SubmissionDocument } from '../schemas/submission.schema';
 import { Question, QuestionDocument } from '../schemas/question.schema';
 import { scoringConfig } from './scoring.config';
 import { EmailService } from '../email/email.service';
-//ovde treba ostaviti i dokument kojim ce se upisivati direktno rezultati jednog ispitanika - moraju imati kod a pozeljno i mejl
-//da bi se lakse cupali kasnije za benchmark i tips and tricks
+
 @Injectable()
 export class SubmissionsService {
   private readonly logger = new Logger(SubmissionsService.name);
@@ -18,68 +17,62 @@ export class SubmissionsService {
     private emailService: EmailService,
   ) {}
 
-  async processSubmission(payload: any) {
-    const { email, odgovori } = payload;
+async processSubmission(payload: any) {
+    const { email, isRealAttempt, answers } = payload;
 
-    // 1. Dobavljamo sva pitanja iz baze kako bismo mapirali 'key' u 'text' i 'category'
+    if (!answers || !Array.isArray(answers)) {
+      throw new Error("Missing 'answers' array in payload");
+    }
+
+    // 🚀 NOVO: Pretvaramo tvoj NIZ u objekat (mapu) kako bi scoring funkcija radila!
+    const answersMap: Record<string, any> = {};
+    for (const ans of answers) {
+      answersMap[ans.questionKey] = ans.value;
+    }
+
+    // 2. Dobavljamo sva pitanja iz baze
     const allQuestions = await this.questionModel.find().exec();
     const questionMap = new Map();
     allQuestions.forEach((q) => {
       questionMap.set(q.key, { text: q.text, category: q.category });
     });
 
-    // 2. Mapiranje institucije i države
-    // Ovo treba remapirati sa pitanjem iz koje drzave dolazite
-    const institution = 'Unknown';
-    //const institution = odgovori['study_status_university'] || 'Unknown';
-    const state = this.determineState(institution);
+    // 3. Mapiranje institucije i države
+    const institutionMapValue = answersMap['study_status_university'] || 'Unknown';
+    const state = this.determineState(institutionMapValue);
 
-    // 3. Mapiranje statusa mobilnosti
-    const exchangeStatus = odgovori['exchange_status'] || '';
+    // 4. Mapiranje statusa mobilnosti (SADA KORISTI answersMap)
+    const exchangeStatus = answersMap['exchange_status'] || '';
     const mobilityDone =
-      exchangeStatus.includes('Yes') || exchangeStatus.includes('currently');
+      typeof exchangeStatus === 'string' &&
+      (exchangeStatus.includes('Yes') || exchangeStatus.includes('currently'));
 
-    // 4. Transformacija ravnog 'odgovori' objekta Answer[] niz
-    const structuredAnswers: {
-      questionKey: string;
-      questionText: string;
-      category: string;
-      questionVersion: number;
-      value: any;
-    }[] = [];
+    // 5. Transformacija (zadržavamo ono što ti već stiže u nizu, jer je frontend već formatirao!)
+    const structuredAnswers = answers.map((ans) => ({
+      questionKey: ans.questionKey,
+      questionText: ans.questionText || questionMap.get(ans.questionKey)?.text || 'Unknown',
+      category: ans.category || questionMap.get(ans.questionKey)?.category || 'Uncategorized',
+      questionVersion: ans.questionVersion || 1,
+      value: ans.value,
+    }));
 
-    for (const [key, value] of Object.entries(odgovori)) {
-      const qInfo = questionMap.get(key) || {
-        text: 'Unknown/Custom Question',
-        category: 'Uncategorized',
-      };
+    // 6. Kalkulacija rezultata (SADA PROSLEĐUJEMO answersMap)
+    const scores = this.calculateScores(answersMap);
 
-      structuredAnswers.push({
-        questionKey: key,
-        questionText: qInfo.text,
-        category: qInfo.category,
-        questionVersion: 1,
-        value: value,
-      });
-    }
-
-    // 5. Kalkulacija rezultata
-    const scores = this.calculateScores(odgovori);
-
-    // 6. Kreiranje dokumenta
+    // 7. Kreiranje dokumenta
     const newSubmission = new this.submissionModel({
       state: state,
-      institution: institution,
+      institution: institutionMapValue,
       questionnaireVersion: 1,
       email: email || 'test-email@test.com',
       mobilityDone: mobilityDone,
       answers: structuredAnswers,
+      isRealAttempt: isRealAttempt,
     });
 
     await newSubmission.save();
     this.logger.log(`Prijava perzistirana u MongoDB. ID: ${newSubmission._id}`);
 
-    // 7. Slanje mejla
     if (email) {
       this.emailService.sendResultsEmail(
         email,
@@ -88,16 +81,14 @@ export class SubmissionsService {
       );
     }
 
-    // 8. Vraćanje rezultata
     return {
-      message:
-        'Prijava je uspešna, rezultati su sačuvani po novoj strukturi i poslati na mejl.',
+      message: 'Prijava je uspešna, rezultati su sačuvani i poslati na mejl.',
       submissionId: newSubmission._id,
       results: scores,
     };
   }
 
-  // Pomoćna funkcija za dodeljivanje države na osnovu izabranog univerziteta
+  // Pomoćna funkcija za dodeljivanje države
   private determineState(university: string): string {
     if (university.includes('Zagreb')) return 'Croatia';
     if (university.includes('ESIEA')) return 'France';
@@ -107,15 +98,20 @@ export class SubmissionsService {
     return 'Other';
   }
 
-  private calculateScores(odgovori: any) {
+  // Ažuriran naziv parametra da prati logiku (odgovori -> answers)
+  private calculateScores(answers: any) {
+
     const categoryTotals: Record<string, { sum: number; count: number }> = {};
 
-    for (const kljuc in odgovori) {
+    for (const kljuc in answers) {
       const config = scoringConfig[kljuc];
-      if (!config) continue;
+        if (!config) {
+    console.log(`[SKIPPED] Nema configa za ključ: ${kljuc}`);
+    continue;
+  }
 
-      let answer = odgovori[kljuc];
-
+      let answer = answers[kljuc];
+console.log(`[SCORING] Ključ: ${kljuc}, Vrednost:`, answer, `Tip:`, typeof answer);
       if (typeof answer === 'string' && config.valueMap) {
         const score = config.valueMap[answer];
         if (score !== undefined) {

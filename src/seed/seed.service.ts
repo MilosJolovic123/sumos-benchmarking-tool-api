@@ -93,7 +93,7 @@ export class SeedService implements OnModuleInit {
         {
           key: 'study_status_origin_area',
           text: 'Where do you come from?',
-          category: 'Demographic data',
+          category: 'Study status data',
           type: 'SINGLE_CHOICE',
           options: [
             'A rural area',

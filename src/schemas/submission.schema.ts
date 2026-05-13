@@ -28,10 +28,9 @@ export type SubmissionDocument = Submission & Document;
 // Glavna šema prijave
 @Schema({ timestamps: true })
 export class Submission {
+  //Napomena: state se sada zapravo mapira iz pitanja za drzavu
   @Prop({ required: true, index: true }) 
   state!: string; 
-  // Napomena: Država se ne pita direktno u docx, pa pretpostavljam da ćemo
-  // mapirati na osnovu izabranog Univerziteta.
 
   @Prop({ required: true, index: true })
   institution!: string; // Mapira se iz pitanja "Please select your home university"
@@ -43,7 +42,7 @@ export class Submission {
   email!: string;
 
   @Prop({ required: true })
-  mobilityDone!: boolean; // Backend može ovo da validira proverom odgovora na pitanje o razmeni
+  mobilityDone!: boolean; // Backend ovo da validira proverom odgovora na pitanje o razmeni
 
   // Odgovori na jedan upitnik kao lista-
   @Prop({ type: [OdgovorSchema], required: true })
