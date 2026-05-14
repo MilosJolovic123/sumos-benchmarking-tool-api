@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
-import { Question } from './question.schema';
 
 // Pomoćna šema za svaki pojedinačni odgovor
 @Schema({ _id: false }) 
@@ -43,6 +42,12 @@ export class Submission {
 
   @Prop({ required: true })
   mobilityDone!: boolean; // Backend ovo da validira proverom odgovora na pitanje o razmeni
+
+  @Prop({required: true})
+  isRealAttempt!: boolean;
+
+  @Prop({required: true})
+  benchmarkCode!: string;
 
   // Odgovori na jedan upitnik kao lista-
   @Prop({ type: [OdgovorSchema], required: true })

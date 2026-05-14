@@ -24,7 +24,6 @@ async processSubmission(payload: any) {
       throw new Error("Missing 'answers' array in payload");
     }
 
-    // 🚀 NOVO: Pretvaramo tvoj NIZ u objekat (mapu) kako bi scoring funkcija radila!
     const answersMap: Record<string, any> = {};
     for (const ans of answers) {
       answersMap[ans.questionKey] = ans.value;
@@ -39,13 +38,17 @@ async processSubmission(payload: any) {
 
     // 3. Mapiranje institucije i države
     const institutionMapValue = answersMap['study_status_university'] || 'Unknown';
-    const state = this.determineState(institutionMapValue);
+   // const state = this.determineState(institutionMapValue);
 
     // 4. Mapiranje statusa mobilnosti (SADA KORISTI answersMap)
     const exchangeStatus = answersMap['exchange_status'] || '';
     const mobilityDone =
       typeof exchangeStatus === 'string' &&
       (exchangeStatus.includes('Yes') || exchangeStatus.includes('currently'));
+
+    // 4.1. Mapiranje drzave 
+    const stateAnswer = answersMap['demo_country'] || '';
+    const state = typeof stateAnswer === 'string' ? stateAnswer : '';
 
     // 5. Transformacija (zadržavamo ono što ti već stiže u nizu, jer je frontend već formatirao!)
     const structuredAnswers = answers.map((ans) => ({
@@ -67,7 +70,7 @@ async processSubmission(payload: any) {
       email: email || 'test-email@test.com',
       mobilityDone: mobilityDone,
       answers: structuredAnswers,
-      isRealAttempt: isRealAttempt,
+      isRealAttempt: isRealAttempt || false,
     });
 
     await newSubmission.save();
