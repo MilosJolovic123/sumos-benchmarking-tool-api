@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Result, ResultDocument } from '../schemas/result.schema';
@@ -10,9 +14,27 @@ export class BenchmarkService {
   ) {}
 
   async compareResults(myCode: string, otherCode: string) {
+    if (typeof myCode !== 'string' || typeof otherCode !== 'string') {
+      throw new BadRequestException(
+        'Invalid input: Benchmark codes must be textual.',
+      );
+    }
+
+    if (myCode.trim() === '' || otherCode.trim() === '') {
+      throw new BadRequestException(
+        'Invalid input: Benchmark codes cannot be empty.',
+      );
+    }
+
+    if (myCode === otherCode) {
+      throw new BadRequestException(
+        'Invalid input: You cannot compare the same benchmark code to itself.',
+      );
+    }
+
     if (!myCode || !otherCode) {
-      throw new Error(
-        'Oba koda (myBenchmarkCode i otherBenchmarkCode) su obavezna.',
+      throw new BadRequestException(
+        'Invalid input: Both benchmark codes are required.',
       );
     }
 
@@ -24,13 +46,13 @@ export class BenchmarkService {
 
     if (!myResult) {
       throw new NotFoundException(
-        `Tvoj rezultat (kod: ${myCode}) nije pronađen u bazi.`,
+        `Your result (code: ${myCode}) was not found in the database.`,
       );
     }
 
     if (!otherResult) {
       throw new NotFoundException(
-        `Rezultat za upoređivanje (kod: ${otherCode}) nije pronađen u bazi.`,
+        `Result for comparison (code: ${otherCode}) was not found in the database.`,
       );
     }
 

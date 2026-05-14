@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { BenchmarkService } from './benchmark.service';
 
-@Controller('benchmark')
+@Controller('api/benchmark')
 export class BenchmarkController {
   constructor(private readonly benchmarkService: BenchmarkService) {}
 
