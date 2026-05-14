@@ -1,23 +1,22 @@
 export const scoringConfig = {
-  // 1. AWARENESS
   awareness_1: { category: 'Awareness', reverse: false },
   awareness_2: { category: 'Awareness', reverse: false },
   awareness_3: { category: 'Awareness', reverse: false },
   awareness_4: { category: 'Awareness', reverse: false },
   awareness_5: { category: 'Awareness', reverse: false },
-  // 2. ATTITUDES / MOTIVATIONS
-  attitude_1: { category: 'Attitude', reverse: false },
-  attitude_2: { category: 'Attitude', reverse: false },
-  attitude_3: { category: 'Attitude', reverse: false },
-  attitude_4: { category: 'Attitude', reverse: false },
-  // 3. HABITS - TRAVEL
+
+  attitude_1: { category: 'Attitudes', reverse: false },
+  attitude_2: { category: 'Attitudes', reverse: false },
+  attitude_3: { category: 'Attitudes', reverse: false },
+  attitude_4: { category: 'Attitudes', reverse: false },
+
   habits_travel_daily: {
-    category: 'Habits',
+    category: 'Travel',
     isMatrix: true,
-    reverseKeys: ['Car (alone)'], // Samo vožnja kolima skida poene
+    reverseKeys: ['Car (alone)', 'Car alone'], // Dodate obe varijacije zbog sigurnosti [cite: 41]
   },
   habits_travel_distance: {
-    category: 'Habits',
+    category: 'Travel',
     valueMap: {
       'Less than 2km': 5,
       '2-5km': 4,
@@ -27,12 +26,12 @@ export const scoringConfig = {
     },
   },
   habits_other_plane: {
-    category: 'Habits',
+    category: 'Travel',
     isMatrix: true,
-    reverseKeys: ['Plane'],
+    reverseKeys: ['Plane', 'Car (alone)', 'Car alone'], // [cite: 52, 53]
   },
   habits_trips_total: {
-    category: 'Habits',
+    category: 'Travel',
     valueMap: {
       '0': 5,
       '1-2': 4,
@@ -42,7 +41,7 @@ export const scoringConfig = {
     },
   },
   habits_trips_plane: {
-    category: 'Habits',
+    category: 'Travel',
     valueMap: {
       '0': 5,
       '1': 4,
@@ -51,9 +50,10 @@ export const scoringConfig = {
       'More than 5': 1,
     },
   },
-  // 4. HABITS - LIVING AND ACCOMMODATION
+
   habits_living_heating: {
-    category: 'Habits',
+    category: 'Living',
+    excludeFromEcoScore: true, // Dokument kaze: OVO NE ULAZI U ECOSCORE [cite: 74]
     valueMap: {
       'Paid separately': 5,
       'Not sure': 3,
@@ -61,7 +61,7 @@ export const scoringConfig = {
     },
   },
   habits_living_laundry: {
-    category: 'Habits',
+    category: 'Living',
     valueMap: {
       '0': 5,
       '1': 4,
@@ -71,23 +71,24 @@ export const scoringConfig = {
     },
   },
   habits_sustainability: {
-    category: 'Habits',
+    category: 'Living',
     isMatrix: true,
     reverseKeys: [],
   },
-  // 5. HABITS - BUYING AND CONSUMPTION
+
   habits_consumption_diet: {
-    category: 'Habits',
+    category: 'Consumption',
     valueMap: {
       Vegan: 5,
       Vegetarian: 4,
       Pescatarian: 3,
+      'Both meat and vegetables': 2,
       'Based on a mix of meat and vegetables': 2,
       'Based mostly on meat': 1,
     },
   },
   habits_consumption_meat_days: {
-    category: 'Habits',
+    category: 'Consumption',
     valueMap: {
       Never: 5,
       '1-2': 4,
@@ -96,15 +97,15 @@ export const scoringConfig = {
       '7': 1,
     },
   },
-  habits_consumption_restaurants: { category: 'Habits', reverse: false },
-  habits_consumption_leftovers: { category: 'Habits', reverse: false },
-  habits_consumption_markets: { category: 'Habits', reverse: false },
-  habits_consumption_seasonal: { category: 'Habits', reverse: false },
-  habits_consumption_bags: { category: 'Habits', reverse: false },
-  habits_consumption_bottle: { category: 'Habits', reverse: false },
-  habits_consumption_secondhand: { category: 'Habits', reverse: false },
+  habits_consumption_restaurants: { category: 'Consumption', reverse: false },
+  habits_consumption_leftovers: { category: 'Consumption', reverse: false },
+  habits_consumption_markets: { category: 'Consumption', reverse: false },
+  habits_consumption_seasonal: { category: 'Consumption', reverse: false },
+  habits_consumption_bags: { category: 'Consumption', reverse: false },
+  habits_consumption_bottle: { category: 'Consumption', reverse: false },
+  habits_consumption_secondhand: { category: 'Consumption', reverse: false },
   habits_consumption_new_clothes: {
-    category: 'Habits',
+    category: 'Consumption',
     valueMap: {
       '0': 5,
       '1-2': 4,
@@ -113,26 +114,69 @@ export const scoringConfig = {
       'More than 10': 1,
     },
   },
-  // 6. HABITS - DIGITAL HABITS
-  habits_digital_devices: { category: 'Habits', reverse: false },
-  habits_digital_energy_saving: { category: 'Habits', reverse: false },
-  habits_digital_files: { category: 'Habits', reverse: false },
-  habits_digital_tradein: { category: 'Habits', reverse: false },
-  habits_digital_ewaste: { category: 'Habits', reverse: false },
-  // 7. HABITS - COMMUNITY
-  habits_community_activities: { category: 'Habits', reverse: false },
-  // 8. BARRIERS
-  // Sve obrćemo:
-  barriers_structural_products: { category: 'Barriers', reverse: true },
-  barriers_structural_mobility: { category: 'Barriers', reverse: true },
-  barriers_financial_expensive: { category: 'Barriers', reverse: true },
-  barriers_informational_confusing: { category: 'Barriers', reverse: true },
-  barriers_informational_uninformed: { category: 'Barriers', reverse: true },
-  barriers_personal_convenience: { category: 'Barriers', reverse: true },
-  barriers_personal_support: { category: 'Barriers', reverse: true },
-  barriers_personal_habits: { category: 'Barriers', reverse: true },
-  // 9. MOBILITY RUBRICS
-  mobility_before_rubric: { category: 'Mobility', isRubric: true },
-  mobility_during_rubric: { category: 'Mobility', isRubric: true },
-  mobility_after_rubric: { category: 'Mobility', isRubric: true },
+
+  habits_digital_devices: { category: 'Digital', reverse: false },
+  habits_digital_energy_saving: { category: 'Digital', reverse: false },
+  habits_digital_files: { category: 'Digital', reverse: false },
+  habits_digital_tradein: { category: 'Digital', reverse: false },
+  habits_digital_ewaste: { category: 'Digital', reverse: false },
+
+  habits_community_activities: { category: 'Engagement', reverse: false },
+
+  barriers_structural_products: {
+    category: 'Barriers',
+    reverse: true,
+    excludeFromEcoScore: true,
+  },
+  barriers_structural_mobility: {
+    category: 'Barriers',
+    reverse: true,
+    excludeFromEcoScore: true,
+  },
+  barriers_financial_expensive: {
+    category: 'Barriers',
+    reverse: true,
+    excludeFromEcoScore: true,
+  },
+  barriers_informational_confusing: {
+    category: 'Barriers',
+    reverse: true,
+    excludeFromEcoScore: true,
+  },
+  barriers_informational_uninformed: {
+    category: 'Barriers',
+    reverse: true,
+    excludeFromEcoScore: true,
+  },
+  barriers_personal_convenience: {
+    category: 'Barriers',
+    reverse: true,
+    excludeFromEcoScore: true,
+  },
+  barriers_personal_support: {
+    category: 'Barriers',
+    reverse: true,
+    excludeFromEcoScore: true,
+  },
+  barriers_personal_habits: {
+    category: 'Barriers',
+    reverse: true,
+    excludeFromEcoScore: true,
+  },
+
+  mobility_before_rubric: {
+    category: 'Mobility_Pre',
+    isMatrix: true,
+    excludeFromEcoScore: true,
+  },
+  mobility_during_rubric: {
+    category: 'Mobility_During',
+    isMatrix: true,
+    excludeFromEcoScore: true,
+  },
+  mobility_after_rubric: {
+    category: 'Mobility_After',
+    isMatrix: true,
+    excludeFromEcoScore: true,
+  },
 };
