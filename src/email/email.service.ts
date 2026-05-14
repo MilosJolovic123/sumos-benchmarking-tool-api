@@ -18,7 +18,7 @@ export class EmailService {
     });
   }
 
-  async sendResultsEmail(to: string, overallScore: number, categoryScores: Record<string, number>) {
+  async sendResultsEmail(to: string, overallScore: number, categoryScores: Record<string, number>, benchmarkCode: string) {
     try {
       
       let categoriesHtml = '';
@@ -34,7 +34,7 @@ export class EmailService {
           <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #2E8B57;">Hvala Vam na učešću u istraživanju!</h2>
             <p>Uspešno smo zabeležili Vaše odgovore. Na osnovu Vaših navika, stavova i prepreka, izračunali smo Vaš profil održivosti.</p>
-            
+            <p>Vaš benchmarking kod: <strong>${benchmarkCode}</strong></p>
             <div style="background-color: #f4fdf4; padding: 20px; border-radius: 8px; border-left: 5px solid #2E8B57; margin: 20px 0;">
               <h3 style="margin-top: 0;">Ukupan Eko-Skor: <span style="font-size: 24px; color: #2E8B57;">${overallScore.toFixed(2)}</span> / 5.00</h3>
             </div>

@@ -46,7 +46,7 @@ export class Submission {
   @Prop({required: true})
   isRealAttempt!: boolean;
 
-  @Prop({required: true})
+  @Prop({required: true, unique: true, index: true})
   benchmarkCode!: string;
 
   // Odgovori na jedan upitnik kao lista-

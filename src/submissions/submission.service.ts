@@ -62,6 +62,11 @@ async processSubmission(payload: any) {
     // 6. Kalkulacija rezultata (SADA PROSLEĐUJEMO answersMap)
     const scores = this.calculateScores(answersMap);
 
+    //6.1 Kalkulacija koda za benchmarking
+
+    const benchCode = this.generateBenchmarkingCode();
+    const bCode = typeof benchCode === 'string' ? benchCode : 'ERROR';
+
     // 7. Kreiranje dokumenta
     const newSubmission = new this.submissionModel({
       state: state,
@@ -71,6 +76,7 @@ async processSubmission(payload: any) {
       mobilityDone: mobilityDone,
       answers: structuredAnswers,
       isRealAttempt: isRealAttempt || false,
+      benchmarkCode: bCode,
     });
 
     await newSubmission.save();
@@ -81,6 +87,7 @@ async processSubmission(payload: any) {
         email,
         scores.overallScore,
         scores.categoryScores,
+        bCode,
       );
     }
 
@@ -91,15 +98,20 @@ async processSubmission(payload: any) {
     };
   }
 
-  // Pomoćna funkcija za dodeljivanje države
-  private determineState(university: string): string {
-    if (university.includes('Zagreb')) return 'Croatia';
-    if (university.includes('ESIEA')) return 'France';
-    if (university.includes('Žilina')) return 'Slovakia';
-    if (university.includes('Maribor')) return 'Slovenia';
-    if (university.includes('Belgrade')) return 'Serbia';
-    return 'Other';
+  private generateBenchmarkingCode(length = 6): string {
+  // Ne koriste se O, 0, 1, I, L - da bi se izbegla zabuna prilikom čitanja
+  const charset = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let code = '';
+  
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    code += charset[randomIndex];
   }
+  if (length === 6) {
+    return `${code.substring(0, 3)}-${code.substring(3, 6)}`;
+  }
+  return code;
+}
 
   // Ažuriran naziv parametra da prati logiku (odgovori -> answers)
   private calculateScores(answers: any) {
