@@ -120,16 +120,6 @@ export class SubmissionsService {
 
     this.logger.log(`Prijava perzistirana u MongoDB. ID: ${newSubmission._id}`);
 
-    const newResult = new this.resultModel({
-      submissionId: newSubmission._id,
-      email: newSubmission.email,
-      benchmarkCode: newSubmission.benchmarkCode,
-      ecoScore: scores.ecoScore,
-      categoryScores: scores.categoryScores,
-      mobility: scores.mobility,
-    });
-    await newResult.save();
-
     // Određivanje Bedža (My Eco Profile)
     let assignedBadge = feedbackConfig.overall[0].badge;
     let assignedMessage = feedbackConfig.overall[0].message;
@@ -140,6 +130,18 @@ export class SubmissionsService {
         break;
       }
     }
+
+    const newResult = new this.resultModel({
+      submissionId: newSubmission._id,
+      isRealAttempt: newSubmission.isRealAttempt,
+      email: newSubmission.email,
+      benchmarkCode: newSubmission.benchmarkCode,
+      ecoScore: scores.ecoScore,
+      categoryScores: scores.categoryScores,
+      mobility: scores.mobility,
+      badge: assignedBadge,
+    });
+    await newResult.save();
 
     // Određivanje sugestija po kategorijama
     const categorySuggestions: Record<string, string> = {};

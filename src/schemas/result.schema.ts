@@ -9,6 +9,9 @@ export class Result {
   submissionId!: string;
 
   @Prop({ required: true })
+  isRealAttempt!: boolean;
+
+  @Prop({ required: true })
   email!: string;
 
   @Prop({ required: true })
@@ -23,6 +26,9 @@ export class Result {
   //ovo su rezultati za mobilnost
   @Prop({ required: true, type: MongooseSchema.Types.Mixed })
   mobility!: any;
+
+  @Prop({ required: true })
+  badge!: string;
 }
 
 export const ResultSchema = SchemaFactory.createForClass(Result);
