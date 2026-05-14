@@ -18,9 +18,17 @@ export class EmailService {
     });
   }
 
-  async sendResultsEmail(to: string, overallScore: number, categoryScores: Record<string, number>, benchmarkCode: string) {
+  async sendResultsEmail(
+    to: string,
+    overallScore: number,
+    categoryScores: Record<string, number>,
+    mobility: any,
+    benchmarkCode: string,
+    assignedBadge: string,
+    assignedMessage: string,
+    categorySuggestions: Record<string, string>,
+  ) {
     try {
-      
       let categoriesHtml = '';
       for (const [category, score] of Object.entries(categoryScores)) {
         categoriesHtml += `<li><strong>${category}:</strong> ${score.toFixed(2)} / 5.00</li>`;
@@ -52,7 +60,9 @@ export class EmailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Mejl uspešno poslat na ${to} (Message ID: ${info.messageId})`);
+      this.logger.log(
+        `Mejl uspešno poslat na ${to} (Message ID: ${info.messageId})`,
+      );
     } catch (error) {
       this.logger.error(`Greška pri slanju mejla na ${to}:`, error);
     }

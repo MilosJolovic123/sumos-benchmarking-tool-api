@@ -5,12 +5,14 @@ import { Question, QuestionSchema } from '../schemas/question.schema';
 import { EmailModule } from '../email/email.module';
 import { SubmissionsService } from './submission.service';
 import { SubmissionsController } from './submissions.controller';
+import { Result, ResultSchema } from 'src/schemas/result.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Submission.name, schema: SubmissionSchema },
-      { name: Question.name, schema: QuestionSchema }
+      { name: Question.name, schema: QuestionSchema },
+      { name: Result.name, schema: ResultSchema },
     ]),
     EmailModule,
   ],

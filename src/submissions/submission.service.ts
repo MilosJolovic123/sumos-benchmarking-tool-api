@@ -5,6 +5,8 @@ import { Submission, SubmissionDocument } from '../schemas/submission.schema';
 import { Question, QuestionDocument } from '../schemas/question.schema';
 import { scoringConfig } from './scoring.config';
 import { EmailService } from '../email/email.service';
+import { ResultDocument } from 'src/schemas/result.schema';
+import { feedbackConfig } from './feedback.config';
 
 @Injectable()
 export class SubmissionsService {
@@ -13,7 +15,10 @@ export class SubmissionsService {
   constructor(
     @InjectModel(Submission.name)
     private submissionModel: Model<SubmissionDocument>,
-    @InjectModel(Question.name) private questionModel: Model<QuestionDocument>,
+    @InjectModel(Question.name)
+    private questionModel: Model<QuestionDocument>,
+    @InjectModel('Result')
+    private resultModel: Model<ResultDocument>,
     private emailService: EmailService,
   ) {}
 
@@ -115,19 +120,73 @@ export class SubmissionsService {
 
     this.logger.log(`Prijava perzistirana u MongoDB. ID: ${newSubmission._id}`);
 
+    const newResult = new this.resultModel({
+      submissionId: newSubmission._id,
+      email: newSubmission.email,
+      benchmarkCode: newSubmission.benchmarkCode,
+      ecoScore: scores.ecoScore,
+      categoryScores: scores.categoryScores,
+      mobility: scores.mobility,
+    });
+    await newResult.save();
+
+    // Određivanje Bedža (My Eco Profile)
+    let assignedBadge = feedbackConfig.overall[0].badge;
+    let assignedMessage = feedbackConfig.overall[0].message;
+    for (const level of feedbackConfig.overall) {
+      if (scores.ecoScore <= level.maxScore) {
+        assignedBadge = level.badge;
+        assignedMessage = level.message;
+        break;
+      }
+    }
+
+    // Određivanje sugestija po kategorijama
+    const categorySuggestions: Record<string, string> = {};
+    for (const category in scores.categoryScores) {
+      const catScore = scores.categoryScores[category];
+      const levels =
+        feedbackConfig.categories[
+          category as keyof typeof feedbackConfig.categories
+        ];
+
+      if (levels && Array.isArray(levels)) {
+        for (const lvl of levels) {
+          if (catScore <= lvl.maxScore) {
+            categorySuggestions[category] = lvl.message;
+            break;
+          }
+        }
+      }
+    }
+
     if (email) {
       this.emailService.sendResultsEmail(
         email,
         scores.ecoScore,
         scores.categoryScores,
+        scores.mobility,
         newSubmission.benchmarkCode,
+        assignedBadge,
+        assignedMessage,
+        categorySuggestions,
       );
     }
 
     return {
-      message: 'Prijava je uspešna, rezultati su sačuvani i poslati na mejl.',
-      submissionId: newSubmission._id,
-      results: scores,
+      message: 'Survey completed successfully!',
+      result: {
+        scores: {
+          ecoScore: scores.ecoScore,
+          categoryScores: scores.categoryScores,
+          mobility: scores.mobility,
+        },
+        feedback: {
+          badge: assignedBadge,
+          message: assignedMessage,
+          suggestions: categorySuggestions,
+        },
+      },
     };
   }
 

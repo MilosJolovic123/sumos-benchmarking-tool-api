@@ -8,6 +8,7 @@ import { SubmissionsModule } from './submissions/submissions.module';
 import { EmailModule } from './email/email.module';
 import { Question, QuestionSchema } from './schemas/question.schema';
 import { CountriesModule } from './countries/countries.module';
+import { BenchmarkModule } from './benchmark/benchmark.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -24,7 +25,8 @@ MongooseModule.forRootAsync({
     MongooseModule.forFeature([{ name: Submission.name, schema: SubmissionSchema }]),
     SubmissionsModule,
     EmailModule,
-    CountriesModule
+    CountriesModule,
+    BenchmarkModule
   ],
   controllers: [],
   providers: [SeedService],
