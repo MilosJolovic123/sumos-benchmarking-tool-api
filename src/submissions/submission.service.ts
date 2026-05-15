@@ -141,6 +141,7 @@ export class SubmissionsService {
       mobility: scores.mobility,
       badge: assignedBadge,
       completionTimeSeconds: completionTimeSeconds || 0,
+      state: newSubmission.state,
     });
     await newResult.save();
 

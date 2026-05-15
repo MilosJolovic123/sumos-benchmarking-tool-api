@@ -32,6 +32,9 @@ export class Result {
 
   @Prop({ required: true })
   completionTimeSeconds!: number;
+
+  @Prop({ required: true })
+  state!: string;
 }
 
 export const ResultSchema = SchemaFactory.createForClass(Result);
