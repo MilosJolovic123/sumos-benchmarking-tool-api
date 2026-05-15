@@ -139,7 +139,7 @@ export class EmailService {
                     <tr>
                       <td class="stack-column mobile-margin" width="50%" style="vertical-align: top; padding-right: 20px;">
                          <div style="border: 4px solid #64a550; border-radius: 12px; padding: 30px; text-align: center; background-color: #ffffff;">
-                            <p style="font-size: 18px; font-weight: bold; color: #233662; margin-bottom: 15px;">My Eco Profile</p>
+                            <p style="font-size: 18px; font-weight: bold; color: #233662; margin-bottom: 15px;">My Green Profile</p>
                             <div style="font-size: 26px; font-weight: bold; color: #64a550; margin-bottom: 10px;">${assignedBadge}</div>
                             <div style="font-size: 14px; color: #233662;">Overall Score:</div>
                             <div style="font-size: 36px; font-weight: bold; color: #64a550;">${this.fmt(overallScore)}</div>
