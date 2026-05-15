@@ -46,8 +46,6 @@ export class EmailService {
   ) {
     try {
       let categoriesHtml = '';
-
-      // Lista kategorija koje NE ŽELIMO prikazati u listi (poslednjih 5 iz tvog upita)
       const excludedCategories = [
         'Barriers',
         'Mobility_Pre',
@@ -67,7 +65,6 @@ export class EmailService {
       };
 
       for (const [key, score] of Object.entries(categoryScores)) {
-        // Preskoči ako je kategorija na listi za brisanje
         if (excludedCategories.includes(key)) continue;
 
         const label = categoryLabels[key] || key;
@@ -105,8 +102,28 @@ export class EmailService {
         html: `
           <!DOCTYPE html>
           <html>
-          <head><meta charset="utf-8"></head>
-          <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              @media screen and (max-width: 600px) {
+                .stack-column {
+                  display: block !important;
+                  width: 100% !important;
+                  padding-right: 0 !important;
+                  padding-left: 0 !important;
+                  box-sizing: border-box !important;
+                }
+                .mobile-margin {
+                  margin-bottom: 20px !important;
+                }
+                .container {
+                  padding: 10px !important;
+                }
+              }
+            </style>
+          </head>
+          <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;" class="container">
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 700px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
               
               <tr>
@@ -120,7 +137,7 @@ export class EmailService {
                 <td style="padding: 40px;">
                   <table width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td width="50%" style="vertical-align: top; padding-right: 20px;">
+                      <td class="stack-column mobile-margin" width="50%" style="vertical-align: top; padding-right: 20px;">
                          <div style="border: 4px solid #64a550; border-radius: 12px; padding: 30px; text-align: center; background-color: #ffffff;">
                             <p style="font-size: 18px; font-weight: bold; color: #233662; margin-bottom: 15px;">My Eco Profile</p>
                             <div style="font-size: 26px; font-weight: bold; color: #64a550; margin-bottom: 10px;">${assignedBadge}</div>
@@ -128,7 +145,7 @@ export class EmailService {
                             <div style="font-size: 36px; font-weight: bold; color: #64a550;">${this.fmt(overallScore)}</div>
                          </div>
                       </td>
-                      <td width="50%" style="vertical-align: middle;">
+                      <td class="stack-column" width="50%" style="vertical-align: middle;">
                         <h3 style="color: #233662; font-size: 20px; margin-bottom: 10px;">Profile Description</h3>
                         <p style="color: #455369; font-size: 16px; line-height: 1.6; margin: 0;">
                           ${assignedMessage}
