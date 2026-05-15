@@ -18,6 +18,22 @@ export class EmailService {
     });
   }
 
+  private fmt(n: number): string {
+    return n.toLocaleString('en-US', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    });
+  }
+
+  private getScoreColor(score: number): string {
+    const pct = score / 5;
+    if (pct >= 0.8) return '#64a550';
+    if (pct >= 0.6) return '#A3C27C';
+    if (pct >= 0.4) return '#455369';
+    if (pct >= 0.21) return '#D89B39';
+    return '#DC493A';
+  }
+
   async sendResultsEmail(
     to: string,
     overallScore: number,
@@ -29,24 +45,54 @@ export class EmailService {
     categorySuggestions: Record<string, string>,
   ) {
     try {
-      // Dinamičko kreiranje sekcije sa kategorijama i predlozima
       let categoriesHtml = '';
-      for (const [category, score] of Object.entries(categoryScores)) {
+
+      // Lista kategorija koje NE ŽELIMO prikazati u listi (poslednjih 5 iz tvog upita)
+      const excludedCategories = [
+        'Barriers',
+        'Mobility_Pre',
+        'Mobility_During',
+        'Mobility_After',
+        'Habits',
+      ];
+
+      const categoryLabels: Record<string, string> = {
+        Awareness: 'Awareness',
+        Attitudes: 'Attitudes',
+        Travel: 'Travel Habits',
+        Living: 'Living and Accommodation',
+        Consumption: 'Buying and Consumption',
+        Digital: 'Digital Habits',
+        Engagement: 'Community Engagement',
+      };
+
+      for (const [key, score] of Object.entries(categoryScores)) {
+        // Preskoči ako je kategorija na listi za brisanje
+        if (excludedCategories.includes(key)) continue;
+
+        const label = categoryLabels[key] || key;
+        const color = this.getScoreColor(score);
         const suggestion =
-          categorySuggestions[category] ||
-          'Nemamo specifičan predlog za ovu kategoriju trenutno.';
+          categorySuggestions[key] || 'No specific recommendations.';
+        const barWidth = (score / 5) * 100;
 
         categoriesHtml += `
-          <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 15px;">
-              <h4 style="margin: 0; font-size: 20px; color: #1e3a8a;">
-                ${category} 
-                <span style="float: right; color: #10b981; font-weight: bold;">${score.toFixed(2)} / 5.00</span>
-              </h4>
+          <div style="margin-bottom: 30px; border-bottom: 1px solid #eeeeee; padding-bottom: 20px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-size: 18px; font-weight: bold; color: #233662; padding-bottom: 8px;">
+                  ${label}
+                </td>
+                <td align="right" style="font-size: 18px; font-weight: bold; color: ${color};">
+                  ${this.fmt(score)} <span style="color: #bfbfbf; font-size: 14px;">/ 5</span>
+                </td>
+              </tr>
+            </table>
+            <div style="background-color: #f0f0f0; border-radius: 4px; height: 10px; width: 100%; margin-bottom: 15px;">
+              <div style="background-color: ${color}; height: 10px; border-radius: 4px; width: ${barWidth}%;"></div>
             </div>
-            <h5 style="margin: 0 0 10px 0; font-size: 16px; color: #1e3a8a;">Predlog:</h5>
-            <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #4b5563;">
-              ${suggestion}
+            <p style="font-size: 15px; color: #455369; line-height: 1.5; margin: 0;">
+              <strong>Recommendation:</strong> ${suggestion}
             </p>
           </div>
         `;
@@ -55,69 +101,80 @@ export class EmailService {
       const mailOptions = {
         from: process.env.MAIL_FROM,
         to: to,
-        subject: 'Tvoj profil održivosti - Rezultati ankete',
+        subject: 'Your SuMoS Sustainability Profile - Results',
         html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; margin: 0; padding: 20px 10px; color: #333;">
-            <div style="max-width: 680px; margin: 0 auto; background-color: #ffffff;">
+          <!DOCTYPE html>
+          <html>
+          <head><meta charset="utf-8"></head>
+          <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 700px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
               
-              <!-- TOP SECTION (My Eco Profile) -->
-              <div style="background-color: #f9fafb; padding: 40px 20px; text-align: center; border-radius: 12px; margin-bottom: 30px;">
-                
-                <!-- Badge Card -->
-                <div style="display: inline-block; background-color: #ffffff; border: 4px solid #10b981; border-radius: 16px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 24px; min-width: 250px;">
-                  <p style="margin: 0 0 15px 0; font-size: 20px; font-weight: 600; color: #1e3a8a;">Tvoj Eko Profil</p>
-                  
-                  <!-- Placeholder za sliku (Zameniti src apsolutnim URL-om kada bude spremno) -->
-                  <img src="https://via.placeholder.com/120x120.png?text=Globe+Icon" alt="Eco Globe" style="width: 120px; height: 120px; margin: 0 auto 15px auto; display: block; border: 0;" />
-                  
-                  <p style="margin: 0; font-size: 28px; font-weight: bold; color: #10b981; text-align: center;">${assignedBadge}</p>
-                </div>
+              <tr>
+                <td style="background-color: #ffffff; padding: 40px 40px 20px 40px; border-bottom: 1px solid #f0f0f0;">
+                  <h1 style="color: #233662; margin: 0; font-size: 28px; font-weight: bold;">Your Detailed Results</h1>
+                  <p style="color: #455369; font-size: 16px; margin-top: 10px;">SuMoS - Students' Green Awareness and Sustainable Habits</p>
+                </td>
+              </tr>
 
-                <p style="margin: 0 0 20px 0; font-size: 22px; font-weight: 600; color: #1e3a8a;">
-                  Tvoj ukupan rezultat je: <span style="font-weight: bold; color: #10b981;">${overallScore.toFixed(2)}</span>
-                </p>
+              <tr>
+                <td style="padding: 40px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td width="50%" style="vertical-align: top; padding-right: 20px;">
+                         <div style="border: 4px solid #64a550; border-radius: 12px; padding: 30px; text-align: center; background-color: #ffffff;">
+                            <p style="font-size: 18px; font-weight: bold; color: #233662; margin-bottom: 15px;">My Eco Profile</p>
+                            <div style="font-size: 26px; font-weight: bold; color: #64a550; margin-bottom: 10px;">${assignedBadge}</div>
+                            <div style="font-size: 14px; color: #233662;">Overall Score:</div>
+                            <div style="font-size: 36px; font-weight: bold; color: #64a550;">${this.fmt(overallScore)}</div>
+                         </div>
+                      </td>
+                      <td width="50%" style="vertical-align: middle;">
+                        <h3 style="color: #233662; font-size: 20px; margin-bottom: 10px;">Profile Description</h3>
+                        <p style="color: #455369; font-size: 16px; line-height: 1.6; margin: 0;">
+                          ${assignedMessage}
+                        </p>
+                        <div style="margin-top: 20px; padding: 15px; background-color: #f9f8d6; border-radius: 6px; text-align: center; border: 1px solid #e6e4a8;">
+                          <p style="font-size: 14px; color: #233662; margin: 0 0 5px 0;">Benchmarking code:</p>
+                          <strong style="font-size: 24px; color: #233662; letter-spacing: 2px;">${benchmarkCode}</strong>
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
 
-                <!-- Description -->
-                <div style="text-align: left; background-color: #ffffff; padding: 20px; border-radius: 8px; margin-top: 20px;">
-                  <h3 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 600; color: #1e3a8a;">Opis</h3>
-                  <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-                    ${assignedMessage}
-                  </p>
-                </div>
-              </div>
+              <tr>
+                <td style="padding: 0 40px;">
+                  <h2 style="color: #233662; border-bottom: 2px solid #64a550; padding-bottom: 10px; margin-bottom: 30px;">What should you do next?</h2>
+                </td>
+              </tr>
 
-              <!-- BOTTOM SECTION (What should you do next) -->
-              <div style="background-color: #f5f5f5; padding: 40px 20px; border-radius: 12px;">
-                <h2 style="margin: 0 0 20px 0; font-size: 26px; font-weight: bold; color: #1e3a8a;">Šta bi trebalo da uradiš sledeće?</h2>
-                <hr style="border: 0; border-top: 1px solid #d1d5db; margin-bottom: 30px;" />
-                
-                <!-- Lista kategorija -->
-                <div>
+              <tr>
+                <td style="padding: 0 40px 40px 40px;">
                   ${categoriesHtml}
-                </div>
-              </div>
+                </td>
+              </tr>
 
-              <!-- Footer info -->
-              <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
-                <p style="margin: 0; font-size: 14px; color: #6b7280;">
-                  Vaš benchmarking kod: <strong>${benchmarkCode}</strong>
-                </p>
-                <p style="margin: 10px 0 0 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">
-                  <em>Napomena: Ovi rezultati služe isključivo za naučno-istraživačke svrhe.</em>
-                </p>
-              </div>
-
-            </div>
-          </div>
+              <tr>
+                <td style="background-color: #233662; padding: 30px; text-align: center;">
+                  <p style="color: #ffffff; font-size: 14px; margin: 0;">
+                    This email is automatically generated by the SuMoS platform.
+                  </p>
+                  <p style="color: #A3C27C; font-size: 12px; margin-top: 10px;">
+                    © 2026 SuMoS Benchmarking tool - FOI
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
         `,
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      this.logger.log(
-        `Mejl uspešno poslat na ${to} (Message ID: ${info.messageId})`,
-      );
+      this.logger.log(`Email successfully sent to ${to}`);
     } catch (error) {
-      this.logger.error(`Greška pri slanju mejla na ${to}:`, error);
+      this.logger.error(`Error sending email to ${to}:`, error);
     }
   }
 }
