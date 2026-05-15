@@ -29,6 +29,9 @@ export class Result {
 
   @Prop({ required: true })
   badge!: string;
+
+  @Prop({ required: true })
+  completionTimeSeconds!: number;
 }
 
 export const ResultSchema = SchemaFactory.createForClass(Result);

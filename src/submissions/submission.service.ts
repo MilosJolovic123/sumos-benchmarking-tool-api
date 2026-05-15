@@ -23,7 +23,7 @@ export class SubmissionsService {
   ) {}
 
   async processSubmission(payload: any) {
-    const { email, isRealAttempt, answers } = payload;
+    const { email, completionTimeSeconds, isRealAttempt, answers } = payload;
 
     if (!answers || !Array.isArray(answers)) {
       throw new Error("Missing 'answers' array in payload");
@@ -140,6 +140,7 @@ export class SubmissionsService {
       categoryScores: scores.categoryScores,
       mobility: scores.mobility,
       badge: assignedBadge,
+      completionTimeSeconds: completionTimeSeconds || 0,
     });
     await newResult.save();
 
