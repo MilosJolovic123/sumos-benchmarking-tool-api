@@ -35,6 +35,9 @@ export class Result {
 
   @Prop({ required: true })
   state!: string;
+
+  @Prop({ required: true })
+  institution!: string;
 }
 
 export const ResultSchema = SchemaFactory.createForClass(Result);

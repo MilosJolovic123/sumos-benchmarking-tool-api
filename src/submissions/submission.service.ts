@@ -142,6 +142,7 @@ export class SubmissionsService {
       badge: assignedBadge,
       completionTimeSeconds: completionTimeSeconds || 0,
       state: newSubmission.state,
+      institution: institutionMapValue,
     });
     await newResult.save();
 
